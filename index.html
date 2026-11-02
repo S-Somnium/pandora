@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pandora: knowledge outside the weights</title>
+<style>
+  :root { --bg:#0f1115; --panel:#171a21; --line:#2a2f3a; --text:#e6e8ee; --dim:#8b91a1; --a:#7aa2ff; --d:#4cc38a; --b:#f0a85a; --bad:#e5484d; }
+  @media (prefers-color-scheme: light) { :root { --bg:#f6f7f9; --panel:#fff; --line:#dfe2e8; --text:#1b1e24; --dim:#667085; --a:#3563e9; --d:#178a55; --b:#c36a12; --bad:#c62a2f; } }
+  * { box-sizing:border-box } body { margin:0; font:16px/1.6 -apple-system, system-ui, sans-serif; background:var(--bg); color:var(--text) }
+  main { max-width:960px; margin:0 auto; padding:48px 22px 80px }
+  h1 { font-size:34px; line-height:1.2; margin:0 0 10px } h2 { font-size:22px; margin:52px 0 14px }
+  .lead { font-size:19px; color:var(--dim); max-width:720px }
+  .grid { display:grid; gap:14px } .g2 { grid-template-columns:1fr 1fr } .g3 { grid-template-columns:repeat(3,1fr) }
+  @media (max-width:720px) { .g2, .g3 { grid-template-columns:1fr } }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px }
+  .card h3 { margin:0 0 6px; font-size:17px } .card p { margin:0; color:var(--dim) }
+  .tag { display:inline-block; font-size:12px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; margin-bottom:8px }
+  .old .tag { color:var(--bad) } .new .tag { color:var(--d) }
+  ul.x { margin:10px 0 0; padding-left:20px; color:var(--dim) } ul.x li { margin:4px 0 }
+  .part { border-top:4px solid var(--line) } .part.dec { border-top-color:var(--a) } .part.data { border-top-color:var(--d) } .part.dr { border-top-color:var(--b) }
+  .big { font-size:30px }
+  svg { width:100%; height:auto; display:block } svg text { font-family:-apple-system, system-ui, sans-serif; fill:var(--text) }
+  .sub { fill:var(--dim) !important; font-size:12px }
+  .flow { stroke:var(--dim); stroke-width:2; fill:none; marker-end:url(#arr) }
+  .step { display:flex; gap:14px; align-items:flex-start; margin:12px 0 } .num { flex:0 0 30px; height:30px; border-radius:50%; background:var(--line); display:grid; place-items:center; font-weight:700; font-size:14px }
+  .demo { font-family:ui-monospace, Menlo, monospace; font-size:13.5px }
+  .demo .rec { background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:12px; white-space:pre-wrap }
+  .hl { background:color-mix(in srgb, var(--d) 25%, transparent); border-radius:3px; padding:0 2px; transition:background .3s }
+  button { background:var(--a); color:#fff; border:0; border-radius:8px; padding:9px 16px; font:inherit; font-weight:600; cursor:pointer }
+  .ans { font-size:20px; font-weight:700; color:var(--d); margin-top:6px } .note { color:var(--dim); font-size:14px }
+  footer { margin-top:60px; color:var(--dim); font-size:14px }
+</style>
+</head>
+<body>
+<main>
+  <h1>Knowledge belongs in data,<br>not in weights.</h1>
+  <p class="lead">pandora splits a big language model into three parts: a <b style="color:var(--a)">decider</b> that reasons, <b style="color:var(--d)">data</b> that lives outside the model, and a <b style="color:var(--b)">drafter</b> that writes answers only from that data. When a fact changes, you change the data. No retraining.</p>
+
+  <h2>The problem with knowledge in the weights</h2>
+  <div class="grid g2">
+    <div class="card old"><div class="tag">Today's LLMs</div><h3>Knowledge is memorised during training</h3>
+      <ul class="x">
+        <li><b>Goes stale.</b> When a price, a policy or a fact changes, the model keeps the old one until someone trains it again.</li>
+        <li><b>Heavy.</b> The whole model, with everything it memorised, has to be loaded in RAM to answer anything.</li>
+        <li><b>Can invent.</b> Free-text generation from memory can produce fluent answers that aren't true.</li>
+        <li><b>Hard to trace.</b> You can't point to where an answer came from.</li>
+      </ul></div>
+    <div class="card new"><div class="tag">pandora</div><h3>Knowledge is read when you ask</h3>
+      <ul class="x">
+        <li><b>Always current.</b> Update a file or a record and the next answer uses it.</li>
+        <li><b>Light.</b> The models only learn how to read and decide: 157 M + 117 M parameters, milliseconds on a laptop.</li>
+        <li><b>Grounded.</b> Every draft is copied from the data, so facts can't be made up.</li>
+        <li><b>Traceable.</b> Each answer points back to the text it came from.</li>
+      </ul></div>
+  </div>
+
+  <h2>Three parts instead of one</h2>
+  <div class="grid g3">
+    <div class="card part dec"><div class="big">🧠</div><h3>Decider</h3><p>Logic and reasoning. Reads the question, the data and the candidate answers, and picks one, or says <i>none</i>. It holds skills, not facts.</p></div>
+    <div class="card part data"><div class="big">📚</div><h3>Data</h3><p>The knowledge: documents, records, policies, logs, agent transcripts. It lives outside the model, in files, a database or a search index, and you change it any time.</p></div>
+    <div class="card part dr"><div class="big">✍️</div><h3>Drafter</h3><p>Drafts candidate answers only from the data it is given: copied spans, a small fixed vocabulary (yes/no, numbers) or schema-checked tool calls.</p></div>
+  </div>
+
+  <h2>How an answer is made</h2>
+  <div class="card">
+    <svg viewBox="0 0 900 230" role="img" aria-label="question and data flow into the drafter, drafts flow into the decider, which outputs the answer">
+      <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor" style="fill:var(--dim)"/></marker></defs>
+      <rect x="10" y="20" width="160" height="60" rx="10" fill="none" stroke="var(--line)" stroke-width="2"/><text x="90" y="48" text-anchor="middle" font-weight="700">❓ Question</text><text x="90" y="67" text-anchor="middle" class="sub">"When is it due?"</text>
+      <rect x="10" y="140" width="160" height="70" rx="10" fill="none" stroke="var(--d)" stroke-width="2.5"/><text x="90" y="170" text-anchor="middle" font-weight="700">📚 Data</text><text x="90" y="189" text-anchor="middle" class="sub">files · records · index</text>
+      <rect x="270" y="80" width="170" height="70" rx="10" fill="none" stroke="var(--b)" stroke-width="2.5"/><text x="355" y="110" text-anchor="middle" font-weight="700">✍️ Drafter</text><text x="355" y="129" text-anchor="middle" class="sub">copies spans from the data</text>
+      <rect x="520" y="80" width="170" height="70" rx="10" fill="none" stroke="var(--a)" stroke-width="2.5"/><text x="605" y="110" text-anchor="middle" font-weight="700">🧠 Decider</text><text x="605" y="129" text-anchor="middle" class="sub">picks one, or "none"</text>
+      <rect x="760" y="85" width="130" height="60" rx="10" fill="none" stroke="var(--line)" stroke-width="2"/><text x="825" y="113" text-anchor="middle" font-weight="700">✅ Answer</text><text x="825" y="131" text-anchor="middle" class="sub">+ where it came from</text>
+      <path class="flow" d="M170,50 C220,50 220,100 266,105"/><path class="flow" d="M170,175 C220,175 220,130 266,125"/>
+      <path class="flow" d="M440,115 L516,115"/><text x="478" y="105" text-anchor="middle" class="sub">drafts</text>
+      <path class="flow" d="M170,190 C400,230 560,200 600,154"/><text x="400" y="222" text-anchor="middle" class="sub">the decider reads the same data</text>
+      <path class="flow" d="M690,115 L756,115"/>
+    </svg>
+    <div class="step"><div class="num">1</div><div>The question and the relevant data go to the <b>drafter</b>. Long files are cut down to their most relevant blocks first.</div></div>
+    <div class="step"><div class="num">2</div><div>The drafter proposes a handful of candidate answers. Each one is a piece of the data, never free text from memory.</div></div>
+    <div class="step"><div class="num">3</div><div>The <b>decider</b> reads the question, the same data and the drafts in one pass (about 24 ms), and picks the best one. If none fits, it answers <i>none</i> instead of guessing.</div></div>
+  </div>
+
+  <h2>Try it: change the data, not the model</h2>
+  <div class="card demo">
+    <div class="grid g2">
+      <div><div class="note">📚 data (a record outside the model)</div>
+        <div class="rec" id="rec">Invoice INV-2201 · Acme Tools Ltd
+Total due: 450 EUR
+Payment due: <span class="hl" id="due">30 Nov 2026</span></div>
+        <div style="margin-top:12px"><button id="upd">Update the record</button></div></div>
+      <div><div class="note">❓ "When is the payment due?"</div><div class="ans" id="ans">30 Nov 2026</div>
+        <div class="note" id="why" style="margin-top:8px">copied from the record (highlighted)</div>
+        <div class="note" style="margin-top:14px">🧠 model weights: <b>unchanged</b> · retraining: <b>none</b></div></div>
+    </div>
+  </div>
+  <p class="note">This box is an illustration of the flow, not the model running. To run the real models, start <code>python app/server.py</code> and attach your own files.</p>
+
+  <h2>Why it matters</h2>
+  <div class="grid g3">
+    <div class="card"><h3>🔄 Always up to date</h3><p>Prices, policies, inventories and tickets change daily. Point pandora at the current data and it answers from the current data.</p></div>
+    <div class="card"><h3>🔐 Private by design</h3><p>Your documents are read at answer time and never trained into weights that could leak them or need deleting later.</p></div>
+    <div class="card"><h3>⚡ Runs anywhere</h3><p>Without a memorised world inside, the models are small: 158 MB for the decider, decisions in milliseconds on a laptop, fully offline.</p></div>
+  </div>
+
+  <footer>pandora · MIT license · The models can still choose the wrong piece of the data, so for important decisions give the decider your own options (pick mode). See the README for benchmarks and limitations.</footer>
+</main>
+<script>
+const dates = ["30 Nov 2026", "15 Dec 2026", "10 Jan 2027", "30 Nov 2026"]; let i = 0;
+document.getElementById("upd").onclick = () => {
+  i = (i + 1) % dates.length; const d = dates[i], due = document.getElementById("due"), ans = document.getElementById("ans");
+  due.textContent = d; due.style.background = "color-mix(in srgb, var(--b) 45%, transparent)";
+  setTimeout(() => { due.style.background = ""; ans.textContent = d; document.getElementById("why").textContent = "new answer, same model: the record changed"; }, 450);
+};
+</script>
+</body>
+</html>
