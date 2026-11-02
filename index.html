@@ -29,6 +29,8 @@
   .hl { background:color-mix(in srgb, var(--d) 25%, transparent); border-radius:3px; padding:0 2px; transition:background .3s }
   button { background:var(--a); color:#fff; border:0; border-radius:8px; padding:9px 16px; font:inherit; font-weight:600; cursor:pointer }
   .ans { font-size:20px; font-weight:700; color:var(--d); margin-top:6px } .note { color:var(--dim); font-size:14px }
+  .cta { display:inline-flex; align-items:center; gap:8px; margin-top:20px; background:var(--a); color:#fff; text-decoration:none; font-weight:600; padding:10px 18px; border-radius:10px }
+  .cta:hover { filter:brightness(1.1) } footer a { color:var(--a) }
   footer { margin-top:60px; color:var(--dim); font-size:14px }
 </style>
 </head>
@@ -36,6 +38,7 @@
 <main>
   <h1>Knowledge belongs in data,<br>not in weights.</h1>
   <p class="lead">pandora splits a big language model into three parts: a <b style="color:var(--a)">decider</b> that reasons, <b style="color:var(--d)">data</b> that lives outside the model, and a <b style="color:var(--b)">drafter</b> that writes answers only from that data. When a fact changes, you change the data. No retraining.</p>
+  <a class="cta" href="https://huggingface.co/S-Somnium/pandora">🤗 Models, app and training code on Hugging Face →</a>
 
   <h2>The problem with knowledge in the weights</h2>
   <div class="grid g2">
@@ -94,7 +97,7 @@ Payment due: <span class="hl" id="due">30 Nov 2026</span></div>
         <div class="note" style="margin-top:14px">🧠 model weights: <b>unchanged</b> · retraining: <b>none</b></div></div>
     </div>
   </div>
-  <p class="note">This box is an illustration of the flow, not the model running. To run the real models, start <code>python app/server.py</code> and attach your own files.</p>
+  <p class="note">This box is an illustration of the flow, not the model running. To run the real models, get them from <a href="https://huggingface.co/S-Somnium/pandora" style="color:var(--a)">Hugging Face</a>, start <code>python app/server.py</code> and attach your own files.</p>
 
   <h2>Why it matters</h2>
   <div class="grid g3">
@@ -103,7 +106,7 @@ Payment due: <span class="hl" id="due">30 Nov 2026</span></div>
     <div class="card"><h3>⚡ Runs anywhere</h3><p>Without a memorised world inside, the models are small: 158 MB for the decider, decisions in milliseconds on a laptop, fully offline.</p></div>
   </div>
 
-  <footer>pandora · MIT license · The models can still choose the wrong piece of the data, so for important decisions give the decider your own options (pick mode). See the README for benchmarks and limitations.</footer>
+  <footer>pandora · MIT license · <a href="https://huggingface.co/S-Somnium/pandora">huggingface.co/S-Somnium/pandora</a> · The models can still choose the wrong piece of the data, so for important decisions give the decider your own options (pick mode). See the README for benchmarks and limitations.</footer>
 </main>
 <script>
 const dates = ["30 Nov 2026", "15 Dec 2026", "10 Jan 2027", "30 Nov 2026"]; let i = 0;
